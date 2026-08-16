@@ -1,0 +1,29 @@
+{
+  "name": "zacmagroup",
+  "version": "1.0.0",
+  "description": "A multi-tenant AI platform skeleton for CRM, HRM, payments, training, travel, and visa operations. This repository follows the phased project guide and provides the starting structure for the infrastructure, backend, AI layer, and frontends.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zacma23/ZacmaGroup.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/zacma23/ZacmaGroup/issues"
+  },
+  "homepage": "https://github.com/zacma23/ZacmaGroup#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.117.1",
+    "dotenv": "^17.4.2",
+    "openai": "^7.4.0"
+  }
+}

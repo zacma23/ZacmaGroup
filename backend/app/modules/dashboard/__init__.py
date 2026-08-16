@@ -1,0 +1,1 @@
+"""Dashboard-specific API endpoints."""

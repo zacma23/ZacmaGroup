@@ -1,0 +1,44 @@
+name: DB Schema CI
+
+on: [push, pull_request]
+
+jobs:
+  schema-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: pguser
+          POSTGRES_PASSWORD: pgpass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pguser -d testdb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U pguser && break || sleep 1
+          done
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          python -m pip install --upgrade pip
+          pip install sqlalchemy psycopg2-binary pytest
+      - name: Apply migration (proposal)
+        env:
+          PGPASSWORD: pgpass
+        run: |
+          psql -h localhost -U pguser -d testdb -f 0001_create_rag_schema.sql
+      - name: Run tests
+        env:
+          DATABASE_URL: postgres://pguser:pgpass@localhost:5432/testdb
+        run: |
+          pytest -q
