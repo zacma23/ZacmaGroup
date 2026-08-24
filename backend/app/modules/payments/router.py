@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 
 from app.core.config import settings
 from app.core.demo_data import invoices_store
-from app.core.permissions import require_role
+from app.core.permissions import normalize_role, require_role, verify_resource_ownership
 from app.core.tenancy import get_tenant_id
 from app.models import (
     InvoiceCreate,
@@ -253,17 +253,30 @@ def admin_verify_transaction(
 
 
 # ===========================================================================
-# 3. Invoice Management (Multi-Tenant Invoices)
+# 3. Invoice Management (Multi-Tenant Invoices with IDOR Protection)
 # ===========================================================================
 
 @router.get("/invoices", response_model=list[InvoiceResponse])
 def list_invoices(
+    request: Request,
     module_type: str | None = None,
     status_filter: str | None = None,
     tenant_id: str = Depends(get_tenant_id),
 ):
-    """List all invoices with optional filtering."""
+    """List invoices. Customers only see their own invoices; staff/admin see all tenant invoices."""
     invoices = invoices_store.list_all(tenant_id)
+    user = getattr(request.state, "user", None)
+    if user and isinstance(user, dict):
+        role = normalize_role(user.get("role", "client"))
+        if role in {"client", "customer", "student"}:
+            u_email = (user.get("email") or "").lower().strip()
+            u_id = str(user.get("id") or user.get("sub") or "").strip()
+            invoices = [
+                i for i in invoices
+                if (i.get("customer_email") or "").lower().strip() == u_email
+                or str(i.get("contact_id") or "").strip() == u_id
+            ]
+
     if module_type:
         invoices = [i for i in invoices if i.get("module_type", "").lower() == module_type.lower()]
     if status_filter:
@@ -293,11 +306,17 @@ def create_invoice(
 
 
 @router.get("/invoices/{invoice_id}", response_model=InvoiceResponse)
-def get_invoice(invoice_id: str, tenant_id: str = Depends(get_tenant_id)):
-    """Get single invoice details."""
+def get_invoice(invoice_id: str, request: Request, tenant_id: str = Depends(get_tenant_id)):
+    """Get single invoice details with strict IDOR ownership verification."""
     inv = invoices_store.get(invoice_id, tenant_id)
     if not inv:
         raise HTTPException(status_code=404, detail="Invoice not found")
+
+    user = getattr(request.state, "user", None)
+    if user and isinstance(user, dict):
+        if not verify_resource_ownership(user, inv, owner_fields=["customer_email", "contact_id", "user_id"]):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access forbidden: you do not own this invoice")
+
     return inv
 
 
@@ -305,9 +324,16 @@ def get_invoice(invoice_id: str, tenant_id: str = Depends(get_tenant_id)):
 def update_invoice(
     invoice_id: str,
     payload: InvoiceUpdate,
+    request: Request,
     tenant_id: str = Depends(get_tenant_id),
 ):
-    """Update invoice details."""
+    """Update invoice details. Strictly blocks non-admin clients from modifying invoice data."""
+    user = getattr(request.state, "user", None)
+    if user and isinstance(user, dict):
+        role = normalize_role(user.get("role", "client"))
+        if role in {"client", "customer", "student"}:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to modify invoices")
+
     updates = payload.model_dump(exclude_unset=True)
     if "status" in updates and hasattr(updates["status"], "value"):
         updates["status"] = updates["status"].value
@@ -318,8 +344,18 @@ def update_invoice(
 
 
 @router.delete("/invoices/{invoice_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_invoice(invoice_id: str, tenant_id: str = Depends(get_tenant_id)):
-    """Delete an invoice."""
+def delete_invoice(
+    invoice_id: str,
+    request: Request,
+    tenant_id: str = Depends(get_tenant_id),
+):
+    """Delete an invoice. Strictly blocks non-admin clients from deleting invoices."""
+    user = getattr(request.state, "user", None)
+    if user and isinstance(user, dict):
+        role = normalize_role(user.get("role", "client"))
+        if role in {"client", "customer", "student"}:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions to delete invoices")
+
     if not invoices_store.delete(invoice_id, tenant_id):
         raise HTTPException(status_code=404, detail="Invoice not found")
 

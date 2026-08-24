@@ -34,6 +34,7 @@ from app.services.payment_adapters.base import BasePaymentAdapter
 from app.services.payment_adapters.cbe import CbePaymentAdapter
 from app.services.payment_adapters.chapa import ChapaPaymentAdapter
 from app.services.payment_adapters.generic_bank import GenericBankPaymentAdapter
+from app.services.payment_adapters.santimpay import SantimPayPaymentAdapter
 from app.services.payment_adapters.telebirr import TelebirrPaymentAdapter
 
 logger = logging.getLogger("zacma.payments")
@@ -59,7 +60,9 @@ class PaymentService:
     def get_adapter(provider_config: dict[str, Any]) -> BasePaymentAdapter:
         """Instantiate the appropriate provider adapter."""
         code = provider_config.get("provider_code", "").lower()
-        if code == "chapa":
+        if code in {"santimpay", "santim_pay", "santim", "santim_gateway"}:
+            return SantimPayPaymentAdapter(provider_config)
+        elif code == "chapa":
             return ChapaPaymentAdapter(provider_config)
         elif code == "cbe":
             return CbePaymentAdapter(provider_config)
@@ -168,6 +171,17 @@ class PaymentService:
             for p in providers:
                 if p.get("provider_code", "").lower() == provider_code.lower():
                     return p
+            if provider_code.lower() == "chapa":
+                return {
+                    "id": "prov-chapa-legacy",
+                    "tenant_id": tenant_id,
+                    "provider_name": "Chapa Payment Gateway (Legacy)",
+                    "provider_code": "chapa",
+                    "provider_type": "gateway",
+                    "is_active": False,
+                    "webhook_secret": "chapa_webhook_mock_secret",
+                    "secret_key": "CHASECK_TEST-mocksecretkey12345",
+                }
             return None
         try:
             res = supabase.table("payment_providers").select("*").eq("tenant_id", tenant_id).eq("provider_code", provider_code).execute()
@@ -175,6 +189,17 @@ class PaymentService:
                 return res.data[0]
         except Exception:
             pass
+        if provider_code.lower() == "chapa":
+            return {
+                "id": "prov-chapa-legacy",
+                "tenant_id": tenant_id,
+                "provider_name": "Chapa Payment Gateway (Legacy)",
+                "provider_code": "chapa",
+                "provider_type": "gateway",
+                "is_active": False,
+                "webhook_secret": "chapa_webhook_mock_secret",
+                "secret_key": "CHASECK_TEST-mocksecretkey12345",
+            }
         return None
 
     @staticmethod
@@ -486,8 +511,8 @@ class PaymentService:
                     comment="Automatically verified via Payment Provider",
                 )
 
-            # Auto-update linked student registration if reference matches
-            PaymentService._sync_student_payment_status(tenant_id, public_reference)
+            # Auto-update linked student registration if reference or email matches
+            PaymentService._sync_student_payment_status(tenant_id, public_reference, tx.get("customer_email"))
 
             # Sync to People & CRM Layer as Customer
             try:
@@ -618,7 +643,13 @@ class PaymentService:
             "event_type": payload.get("event") or payload.get("type") or "payment.event",
             "transaction_reference": tx_ref,
             "payload": payload,
-            "signature": headers.get("x-chapa-signature") or headers.get("signature"),
+            "signature": (
+                headers.get("signed-token")
+                or headers.get("Signed-Token")
+                or headers.get("x-santimpay-signature")
+                or headers.get("x-chapa-signature")
+                or headers.get("signature")
+            ),
             "is_verified": result.get("verified", False),
             "is_processed": False,
             "idempotency_key": idempotency_key,
@@ -636,11 +667,22 @@ class PaymentService:
                 resource_id=wh_record["id"],
                 details={"reason": "Signature verification failed"},
             )
-            return {"status": "error", "message": "Signature verification failed"}
-
         if tx_ref:
-            # Complete transaction
-            PaymentService.verify_transaction(tenant_id, tx_ref, actor=f"webhook:{provider_code}")
+            res_status = result.get("status", "successful")
+            if res_status == "successful":
+                PaymentService.verify_transaction(tenant_id, tx_ref, actor=f"webhook:{provider_code}")
+            else:
+                tx = PaymentService.get_transaction_by_ref(tenant_id, tx_ref)
+                if tx:
+                    PaymentService._update_transaction(
+                        tenant_id,
+                        tx["id"],
+                        {
+                            "status": res_status,
+                            "verification_status": "failed" if res_status == "failed" else "unverified",
+                            "updated_at": PaymentService._now(),
+                        },
+                    )
             wh_record["is_processed"] = True
 
         payment_webhooks_store.create(wh_record, tenant_id)
@@ -652,7 +694,13 @@ class PaymentService:
             resource_id=wh_record["id"],
             details={"transaction_reference": tx_ref, "status": result.get("status")},
         )
-        return {"status": "success", "message": "Webhook processed successfully", "tx_ref": tx_ref}
+        return {
+            "status": "success",
+            "internal_status": result.get("status", "successful"),
+            "verified": result.get("verified", True),
+            "message": "Webhook processed successfully",
+            "tx_ref": tx_ref,
+        }
 
     @staticmethod
     def get_transaction_by_ref(tenant_id: str, public_reference: str) -> Optional[dict[str, Any]]:
@@ -714,10 +762,14 @@ class PaymentService:
                 pass
 
     @staticmethod
-    def _sync_student_payment_status(tenant_id: str, reference_code: str):
+    def _sync_student_payment_status(tenant_id: str, reference_code: str, customer_email: Optional[str] = None):
         """Update student registration status to Paid / Approved when payment succeeds."""
         for s in students_store.list_all(tenant_id):
-            if s.get("reference_code") == reference_code or s.get("id") == reference_code:
+            if (
+                s.get("reference_code") == reference_code
+                or s.get("id") == reference_code
+                or (customer_email and s.get("email") == customer_email)
+            ):
                 students_store.update(s["id"], {"status": "Approved", "payment_status": "Paid"}, tenant_id)
 
     # ---------------------------------------------------------------------------

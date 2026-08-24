@@ -51,7 +51,7 @@ function TrackRequestContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: invoice.amount,
-          provider_code: "chapa",
+          provider_code: "santimpay",
           customer_name: requestData.customer_name || "Valued Client",
           customer_email: requestData.email || "client@zacmaa.net",
           customer_phone: requestData.phone,
@@ -64,7 +64,7 @@ function TrackRequestContent() {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to initialize Chapa payment checkout");
+        throw new Error("Failed to initialize SantimPay payment checkout");
       }
 
       const data = await res.json();
@@ -291,7 +291,7 @@ function TrackRequestContent() {
                   </div>
                   <div>
                     <span className="text-slate-500">Settlement Gateway:</span>
-                    <p className="font-medium text-emerald-400">Chapa Direct Secure Checkout</p>
+                    <p className="font-medium text-emerald-400">SantimPay Direct Secure Checkout</p>
                   </div>
                 </div>
 
@@ -313,12 +313,12 @@ function TrackRequestContent() {
                       {payingInvoice ? (
                         <>
                           <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                          Redirecting to Chapa...
+                          Redirecting to SantimPay...
                         </>
                       ) : (
                         <>
                           <CreditCard className="w-3.5 h-3.5" />
-                          Pay Invoice Now via Chapa ({requestData.invoice.amount?.toLocaleString()} {requestData.invoice.currency || "ETB"}) →
+                          Pay Invoice Now via SantimPay ({requestData.invoice.amount?.toLocaleString()} {requestData.invoice.currency || "ETB"}) →
                         </>
                       )}
                     </button>

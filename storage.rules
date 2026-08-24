@@ -1,0 +1,28 @@
+﻿rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isStaffOrAdmin() {
+      return isAuthenticated() && (request.auth.token.role in ['staff', 'admin', 'superadmin', 'finance']);
+    }
+    
+    // User receipt uploads
+    match /receipts/{userId}/{fileName} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isStaffOrAdmin());
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isStaffOrAdmin())
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*|application/pdf');
+    }
+
+    // User KYC and application documents
+    match /documents/{userId}/{fileName} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isStaffOrAdmin());
+      allow write: if isAuthenticated() && (request.auth.uid == userId || isStaffOrAdmin())
+                   && request.resource.size < 20 * 1024 * 1024;
+    }
+  }
+}

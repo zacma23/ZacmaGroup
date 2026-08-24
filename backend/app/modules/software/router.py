@@ -53,7 +53,7 @@ CAPABILITIES_CATALOG = {
         {
             "id": "ecommerce",
             "name": "E-Commerce & Payment Gateway Solutions",
-            "description": "Multi-vendor and standalone digital storefronts with TeleBirr, CBE Birr, and Chapa integration.",
+            "description": "Multi-vendor and standalone digital storefronts with TeleBirr, CBE Birr, and SantimPay integration.",
             "examples": ["Zacma E-Commerce (https://ecommerce.zacmaa.net/)", "Online Supermarkets", "B2B Marketplaces"],
         },
         {

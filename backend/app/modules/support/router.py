@@ -8,7 +8,7 @@ import re
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 
 from app.core.config import settings
@@ -85,13 +85,21 @@ def customer_chatbot(
 
 @router.get("/tickets", response_model=list[SupportTicketResponse])
 def list_tickets(
+    request: Request,
     category: str | None = None,
     priority: str | None = None,
     status_filter: str | None = None,
     tenant_id: str = Depends(get_tenant_id),
 ):
-    """List support tickets with queue and priority filtering."""
+    """List support tickets with queue and priority filtering and customer ownership scoping."""
     tickets = support_tickets_store.list_all(tenant_id)
+    user = getattr(request.state, "user", None)
+    if user and isinstance(user, dict):
+        role = str(user.get("role", "client")).lower()
+        if role in {"client", "customer", "student"}:
+            u_email = (user.get("email") or "").lower().strip()
+            tickets = [t for t in tickets if (t.get("email") or "").lower().strip() == u_email]
+
     if category:
         tickets = [t for t in tickets if t.get("category", "").lower() == category.lower()]
     if priority:
@@ -151,11 +159,20 @@ def create_ticket(
 
 
 @router.get("/tickets/{tkt_id}", response_model=SupportTicketResponse)
-def get_ticket(tkt_id: str, tenant_id: str = Depends(get_tenant_id)):
-    """Get support ticket details and thread."""
+def get_ticket(tkt_id: str, request: Request, tenant_id: str = Depends(get_tenant_id)):
+    """Get support ticket details and thread with IDOR ownership check."""
     tkt = support_tickets_store.get(tkt_id, tenant_id)
     if not tkt:
         raise HTTPException(status_code=404, detail="Support ticket not found")
+
+    user = getattr(request.state, "user", None)
+    if user and isinstance(user, dict):
+        role = str(user.get("role", "client")).lower()
+        if role in {"client", "customer", "student"}:
+            u_email = (user.get("email") or "").lower().strip()
+            if (tkt.get("email") or "").lower().strip() != u_email:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access forbidden: you do not own this ticket")
+
     return tkt
 
 
@@ -750,7 +767,7 @@ def telegram_bot_webhook(
             "• 🛂 *Visa Assistant* (Tourist, Study, Work Visas)\n"
             "• ✈️ *Travel Agency* (Flights, Hotels, 5-Day Itineraries)\n"
             "• 📢 *Marketing Services* (Branding & Ads)\n"
-            "• 💳 *Payments & Invoicing* (Chapa, Telebirr, CBE)\n\n"
+            "• 💳 *Payments & Invoicing* (SantimPay, Telebirr, CBE)\n\n"
             "Type a command or choose an option below:"
         )
         keyboard = [
@@ -763,7 +780,7 @@ def telegram_bot_webhook(
         reply_text = (
             "💳 *Zacma Payment Engine:*\n\n"
             "Supported channels:\n"
-            "• 🟢 *Chapa Gateway* (Cards, CBE Birr, Telebirr)\n"
+            "• 🟢 *SantimPay Gateway* (Cards, CBE Birr, Telebirr)\n"
             "• 📱 *TeleBirr* Direct / USSD / QR\n"
             "• 🏦 *Commercial Bank of Ethiopia (CBE)* Account Transfer\n\n"
             "To view or pay your invoices, access: https://zacmaa.net/portal"

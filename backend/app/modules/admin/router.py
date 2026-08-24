@@ -202,33 +202,45 @@ def update_system_settings(
 
 
 # ---------------------------------------------------------------------------
-# User Management & RBAC
+# User Management & RBAC (Admin & SuperAdmin Only)
 # ---------------------------------------------------------------------------
+
+_superadmin_or_admin_dep = require_role(["superadmin", "admin"])
+
 
 @router.get("/users")
 def list_users(
     tenant_id: str = Depends(get_tenant_id),
-    _user: dict = Depends(_admin_dep),
+    _user: dict = Depends(_superadmin_or_admin_dep),
 ):
-    """List platform users."""
+    """List platform users with sensitive fields sanitized."""
     if supabase is None:
-        return admin_users_store.list_all(tenant_id)
+        raw_users = admin_users_store.list_all(tenant_id)
+        return [{k: v for k, v in u.items() if k != "password_hash"} for u in raw_users]
+    try:
+        result = supabase.table("profiles").select("*").eq("tenant_id", tenant_id).execute()
+        if result.data:
+            return [{k: v for k, v in u.items() if k != "password_hash"} for u in result.data]
+    except Exception:
+        pass
     result = supabase.table("users").select("*").eq("tenant_id", tenant_id).execute()
-    return result.data
+    return [{k: v for k, v in u.items() if k != "password_hash"} for u in result.data]
 
 
 @router.post("/users", status_code=status.HTTP_201_CREATED)
 def create_user(
     payload: AdminUserCreate,
     tenant_id: str = Depends(get_tenant_id),
-    _user: dict = Depends(_admin_dep),
+    _user: dict = Depends(_superadmin_or_admin_dep),
 ):
-    """Create platform user."""
+    """Create platform user with role assignment."""
     if supabase is None:
         existing = admin_users_store.list_all(tenant_id)
-        if any(u["email"] == payload.email for u in existing):
+        if any(u["email"].lower() == payload.email.lower() for u in existing):
             raise HTTPException(status_code=409, detail="Email already exists")
-        return admin_users_store.create(payload.model_dump(exclude={"password"}), tenant_id)
+        data = payload.model_dump(exclude={"password"})
+        data["firebase_uid"] = f"uid-{abs(hash(payload.email)) % 100000}"
+        return admin_users_store.create(data, tenant_id)
     return {}
 
 
@@ -237,7 +249,7 @@ def update_user(
     user_id: str,
     payload: AdminUserUpdate,
     tenant_id: str = Depends(get_tenant_id),
-    _user: dict = Depends(_admin_dep),
+    _user: dict = Depends(_superadmin_or_admin_dep),
 ):
     """Update user role or status."""
     updates = payload.model_dump(exclude_none=True)
@@ -255,7 +267,7 @@ def update_user(
 def delete_user(
     user_id: str,
     tenant_id: str = Depends(get_tenant_id),
-    _user: dict = Depends(_admin_dep),
+    _user: dict = Depends(_superadmin_or_admin_dep),
 ):
     """Deactivate user."""
     if supabase is None:
@@ -271,7 +283,7 @@ def delete_user(
 # ---------------------------------------------------------------------------
 
 @router.get("/tenants")
-def list_tenants(_user: dict = Depends(_admin_dep)):
+def list_tenants(_user: dict = Depends(_superadmin_or_admin_dep)):
     """List tenants."""
     return [
         {
@@ -288,8 +300,8 @@ def list_tenants(_user: dict = Depends(_admin_dep)):
 @router.get("/audit_logs")
 def list_audit_logs(
     tenant_id: str = Depends(get_tenant_id),
-    _user: dict = Depends(_admin_dep),
+    _user: dict = Depends(_superadmin_or_admin_dep),
 ):
-    """List audit trail."""
+    """List security and operational audit trail."""
     logs = audit_logs_store.list_all(tenant_id)
     return sorted(logs, key=lambda x: x.get("timestamp", ""), reverse=True)

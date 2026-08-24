@@ -1,0 +1,25 @@
+{
+  "name": "santimpay-wallet-sdk",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "babel src/ -d lib/",
+    "prepublish": "{{include.package_manager}} run build",
+    "flow": "flow"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.3.1",
+    "jose": "^5.4.0",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.21.0",
+    "@babel/core": "^7.21.4",
+    "@babel/preset-flow": "^7.21.4",
+    "flow-bin": "^0.203.1"
+  }
+}

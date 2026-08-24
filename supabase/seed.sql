@@ -71,4 +71,21 @@ BEGIN
       'Notification sent upon final approval.'
     )
   ON CONFLICT (tenant_id, template_key) DO NOTHING;
+
+  -- 6. Root Administrator Account Profile Seed
+  -- Idempotent administrator profile setup with role 'admin'
+  INSERT INTO public.profiles (id, tenant_id, email, full_name, role, status, metadata)
+  VALUES (
+    '00000000-0000-0000-0000-000000000002',
+    v_tid,
+    'zacma@admin',
+    'Zacma Administrator',
+    'admin',
+    'active',
+    '{"is_root_admin": true}'::jsonb
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    role = 'admin',
+    status = 'active',
+    updated_at = now();
 END $$;

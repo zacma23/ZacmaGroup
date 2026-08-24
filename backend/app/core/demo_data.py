@@ -255,34 +255,35 @@ _INVOICES_SEED: list[dict[str, Any]] = [
 
 _PAYMENT_PROVIDERS_SEED: list[dict[str, Any]] = [
     {
-        "id": "prov-chapa",
+        "id": "prov-santimpay",
         "tenant_id": DEMO_TENANT_ID,
-        "provider_name": "Chapa Payment Gateway",
-        "provider_code": "chapa",
+        "provider_name": "SantimPay Payment Gateway",
+        "provider_code": "santimpay",
         "provider_type": "gateway",
         "is_active": True,
         "is_default": True,
         "priority": 1,
         "environment": "test",
         "currency": "ETB",
-        "supported_currencies": ["ETB", "USD"],
+        "supported_currencies": ["ETB"],
         "account_name": "Zacma Technology Group",
         "account_number": None,
         "customer_payment_number": None,
-        "instructions": "Instant online checkout via Chapa (Debit/Credit Cards, Telebirr, CBE Birr).",
-        "api_endpoint": "https://api.chapa.co/v1",
+        "instructions": "Instant online checkout via SantimPay (Telebirr, CBE Birr, Cards, Awash, Abyssinia).",
+        "api_endpoint": "https://services.santimpay.com/api/v1/gateway",
         "callback_url": "/portal",
-        "webhook_url": "/api/v1/payments/webhooks/chapa",
+        "webhook_url": "/api/v1/payments/webhooks/santimpay",
         "supports_balance_api": True,
-        "transaction_fee_percent": 3.5,
+        "transaction_fee_percent": 2.5,
         "transaction_fee_fixed": 0.0,
         "has_secret_key": True,
-        "secret_key": "CHASECK_TEST-mocksecretkey12345",
-        "api_key": "CHAPUBK_TEST-mockpubkey12345",
-        "webhook_secret": "chapa_webhook_mock_secret",
-        "merchant_id": "merchant-zacma-01",
-        "masked_secret_key": "chapa_sec_••••••••••••",
-        "masked_api_key": "chapa_pub_••••••••••••",
+        "secret_key": "santim_priv_mock_key",
+        "api_key": "santim_pub_mock_key",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEcfE9DYOz/pkenjJ4Abdgr2BsYB5\nzhh+3RxlHA+ZDlQ63+RTJS2BA2vqUeASic2BPMd+LqrAlo+5nCLqdBm//g==\n-----END PUBLIC KEY-----",
+        "webhook_secret": "santim_webhook_mock_secret",
+        "merchant_id": "merchant-santim-01",
+        "masked_secret_key": "santim_sec_••••••••••••",
+        "masked_api_key": "santim_pub_••••••••••••",
         "created_at": _ts(30),
         "updated_at": _ts(1),
     },
@@ -480,8 +481,8 @@ _PAYMENT_LOGS_SEED: list[dict[str, Any]] = [
         "actor": "system",
         "action": "Provider Initialized",
         "resource_type": "payment_provider",
-        "resource_id": "prov-chapa",
-        "details": {"provider_code": "chapa", "status": "active"},
+        "resource_id": "prov-santimpay",
+        "details": {"provider_code": "santimpay", "status": "active"},
         "ip_address": "127.0.0.1",
         "created_at": _ts(30),
     }
@@ -787,7 +788,7 @@ _SYSTEM_SETTINGS_SEED: list[dict[str, Any]] = [
     {
         "id": "sys-settings-001",
         "tenant_id": DEMO_TENANT_ID,
-        "default_payment_methods": ["Chapa", "CBE", "TeleBirr", "Awash", "Abyssinia"],
+        "default_payment_methods": ["SantimPay", "CBE", "TeleBirr", "Awash", "Abyssinia"],
         "courses_list": [
             "Graphics Design", "Video Editing", "Web Design", "Programming", "AI", "Accounting", "Maintenance"
         ],
@@ -827,6 +828,7 @@ _CAMPAIGNS_SEED: list[dict[str, Any]] = [
 ]
 
 _ADMIN_USERS_SEED: list[dict[str, Any]] = [
+    {"id": "usr-admin-root", "tenant_id": DEMO_TENANT_ID, "email": "zacma@admin", "username": "zacma@admin", "full_name": "Zacma Administrator", "role": "admin", "status": "active", "created_at": _ts(365)},
     {"id": _id(), "tenant_id": DEMO_TENANT_ID, "email": "admin@zacma.com", "full_name": "Zacma Admin", "role": "admin", "status": "active", "created_at": _ts(365)},
     {"id": _id(), "tenant_id": DEMO_TENANT_ID, "email": "staff@zacma.com", "full_name": "Zacma Staff", "role": "staff", "status": "active", "created_at": _ts(180)},
     {"id": _id(), "tenant_id": DEMO_TENANT_ID, "email": "finance@zacma.com", "full_name": "Zacma Finance", "role": "finance", "status": "active", "created_at": _ts(120)},
@@ -916,7 +918,7 @@ _KNOWLEDGE_BASE_SEED: list[dict[str, Any]] = [
             "Zacma Technology Group is a leading technology, consulting, and multi-service enterprise headquartered in Addis Ababa, Ethiopia. "
             "The group operates 5 primary service divisions (Software Development, Visa Consulting, Travel Agency, Training Institute, Marketing Solutions) "
             "and 4 official enterprise platforms (ERP, MySchool, E-Commerce, Freelancer). "
-            "Payment Methods: Instant Online Checkout via Chapa, Commercial Bank of Ethiopia (CBE), TeleBirr, Awash Bank, and Bank of Abyssinia. "
+            "Payment Methods: Instant Online Checkout via SantimPay, Commercial Bank of Ethiopia (CBE), TeleBirr, Awash Bank, and Bank of Abyssinia. "
             "Official Contact: +251-911-000000, support@zacma.com, info@zacma.com."
         ),
     },
@@ -1040,7 +1042,7 @@ _KNOWLEDGE_BASE_SEED: list[dict[str, Any]] = [
         "url": "https://ecommerce.zacmaa.net/",
         "content": (
             "Zacma E-Commerce (https://ecommerce.zacmaa.net/) is a multi-vendor and standalone digital commerce platform featuring seamless Ethiopian payment gateways "
-            "(TeleBirr, CBE Birr, Chapa), product catalog management, order fulfillment, discount coupons, and real-time delivery tracking."
+            "(TeleBirr, CBE Birr, SantimPay), product catalog management, order fulfillment, discount coupons, and real-time delivery tracking."
         ),
     },
     {
@@ -1062,9 +1064,9 @@ _KNOWLEDGE_BASE_SEED: list[dict[str, Any]] = [
         "content": (
             "Payment process:\n"
             "1. Client submits service request → Unique reference code (e.g. ZACMA-2026-XXXXXXXX, ZAC-DEV-XXXX) and invoice/payment transaction are generated.\n"
-            "2. Client selects from available active payment options: Instant Online Checkout via Chapa, Commercial Bank of Ethiopia (CBE), TeleBirr, Awash Bank, or Bank of Abyssinia.\n"
+            "2. Client selects from available active payment options: Instant Online Checkout via SantimPay, Commercial Bank of Ethiopia (CBE), TeleBirr, Awash Bank, or Bank of Abyssinia.\n"
             "3. For bank transfers/mobile money, client transfers using their unique reference code and uploads payment receipt in the Client Portal (/portal).\n"
-            "4. For online gateway (Chapa), verification occurs automatically via server-side verification and webhooks.\n"
+            "4. For online gateway (SantimPay), verification occurs automatically via server-side verification and webhooks.\n"
             "5. Upon verification, request transitions to 'PaymentApproved' → AI service execution and fulfillment begins."
         ),
     },

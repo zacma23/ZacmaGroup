@@ -36,14 +36,14 @@ def test_telegram_invoice_notification_dispatch(admin_token):
     payload = {
         "chat_id": 123456789,
         "transaction": {
-            "public_reference": "ZACMA-2026-CHAPA001",
+            "public_reference": "ZACMA-2026-SANTIM001",
             "amount": 4500.0,
             "currency": "ETB",
             "customer_name": "Test Student",
-            "provider_code": "chapa",
+            "provider_code": "santimpay",
             "payment_purpose": "AI Mastery Academy Tuition",
         },
-        "checkout_url": "https://checkout.chapa.co/checkout/payment/ZACMA-2026-CHAPA001",
+        "checkout_url": "https://services.santimpay.com/api/v1/gateway/checkout?id=ZACMA-2026-SANTIM001",
     }
     res = client.post(
         "/api/v1/support/telegram/send-invoice-alert",
@@ -83,16 +83,16 @@ def test_telegram_bot_webhook_commands():
     }
     res_pay = client.post("/api/v1/support/telegram/webhook", json=pay_update)
     assert res_pay.status_code == 200
-    assert "Chapa" in res_pay.json().get("reply_text", "")
+    assert "SantimPay" in res_pay.json().get("reply_text", "")
 
 
-def test_chapa_multi_channel_checkout_and_verification():
-    """Verify Chapa initialize, hosted checkout generation, and verification."""
-    # 1. Initialize transaction via Chapa
+def test_santimpay_multi_channel_checkout_and_verification():
+    """Verify SantimPay initialize, hosted checkout generation, and verification."""
+    # 1. Initialize transaction via SantimPay
     tx_init_payload = {
         "amount": 7500.0,
         "currency": "ETB",
-        "provider_code": "chapa",
+        "provider_code": "santimpay",
         "customer_name": "Almaz Ayana",
         "customer_email": "almaz.ayana@test.com",
         "customer_phone": "+251911882233",
@@ -113,19 +113,19 @@ def test_chapa_multi_channel_checkout_and_verification():
     assert verify_data["status"] == "successful"
 
 
-def test_admin_chapa_provider_test_endpoint(admin_token):
-    """Verify admin connection test for Chapa gateway."""
+def test_admin_santimpay_provider_test_endpoint(admin_token):
+    """Verify admin connection test for SantimPay gateway."""
     headers = {"Authorization": f"Bearer {admin_token}"}
 
-    # Fetch provider ID for Chapa
+    # Fetch provider ID for SantimPay
     prov_res = client.get("/api/v1/payments/admin/providers", headers=headers)
     assert prov_res.status_code == 200
     providers = prov_res.json()
-    chapa_prov = next((p for p in providers if p["provider_code"] == "chapa"), None)
-    assert chapa_prov is not None
+    santim_prov = next((p for p in providers if p["provider_code"] == "santimpay"), None)
+    assert santim_prov is not None
 
     # Test connectivity
-    test_res = client.post(f"/api/v1/payments/admin/providers/{chapa_prov['id']}/test", headers=headers)
+    test_res = client.post(f"/api/v1/payments/admin/providers/{santim_prov['id']}/test", headers=headers)
     assert test_res.status_code == 200
     test_data = test_res.json()
     assert test_data["success"] is True

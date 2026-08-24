@@ -119,7 +119,7 @@ export default function ClientPortalPage() {
           if (res.ok) {
             setPaymentNotification({
               type: "success",
-              message: `Payment verified successfully via Chapa for Reference #${refCode}! Your service request has been activated.`,
+              message: `Payment verified successfully via SantimPay for Reference #${refCode}! Your service request has been activated.`,
             });
             fetchDashboard();
           }
@@ -131,14 +131,14 @@ export default function ClientPortalPage() {
     }
   }, []);
 
-  const handleDirectChapaPay = async (r: any) => {
+  const handleDirectSantimPay = async (r: any) => {
     try {
       const res = await fetch(`${apiBase}/api/v1/payments/transactions/initialize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: r.advance_amount || r.amount || 2500,
-          provider_code: "chapa",
+          provider_code: "santimpay",
           customer_name: r.full_name || fullName || "Client",
           customer_email: r.email || email || "client@zacmaa.net",
           customer_phone: r.phone || profilePhone,
@@ -748,7 +748,7 @@ export default function ClientPortalPage() {
                   Instant Online Checkout & Bank Transfers
                 </h3>
                 <p className="text-xs text-amber-300/80 mt-1">
-                  We accept Chapa (Debit/Credit Cards), Commercial Bank of Ethiopia (CBE), TeleBirr, Awash Bank, and Bank of Abyssinia.
+                  We accept SantimPay (Debit/Credit Cards, Telebirr, CBE Birr), Commercial Bank of Ethiopia (CBE), TeleBirr, Awash Bank, and Bank of Abyssinia.
                 </p>
               </div>
               <button
@@ -859,10 +859,10 @@ export default function ClientPortalPage() {
                       <div className="flex items-center gap-2">
                         {r.payment_status !== "Paid" && r.payment_status !== "Verified" && (
                           <button
-                            onClick={() => handleDirectChapaPay(r)}
+                            onClick={() => handleDirectSantimPay(r)}
                             className="px-3 py-1 bg-emerald-600/90 hover:bg-emerald-600 text-white rounded-lg font-bold text-xs shadow transition flex items-center gap-1"
                           >
-                            Pay via Chapa →
+                            Pay via SantimPay →
                           </button>
                         )}
                         {!r.has_receipt && (
@@ -933,7 +933,7 @@ export default function ClientPortalPage() {
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="mt-1 block w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
                   >
-                    <option value="Chapa">Chapa Online Gateway</option>
+                    <option value="SantimPay">SantimPay Online Gateway</option>
                     <option value="CBE">Commercial Bank of Ethiopia (CBE)</option>
                     <option value="TeleBirr">TeleBirr Mobile Money</option>
                     <option value="Awash">Awash Bank</option>

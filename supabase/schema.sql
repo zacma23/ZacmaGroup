@@ -561,4 +561,20 @@ BEGIN
     (v_tid, 'c0000000-0000-0000-0000-000000000003', 'MAINT_MOB', 'Maintenance: Mobile Phone Repair', 'Diagnostic tools, smartphone screen replacement, motherboard circuit soldering & flashing.', 'Beginner', 50, 4500.00, 'ETB', 'Master Technician', 20),
     (v_tid, 'c0000000-0000-0000-0000-000000000003', 'MAINT_PC', 'Maintenance: Computer & Laptop Repair', 'Desktop/Laptop hardware diagnostics, BIOS repair, motherboard troubleshooting, and OS maintenance.', 'Beginner', 50, 4500.00, 'ETB', 'Hardware Engineer', 20)
   ON CONFLICT (tenant_id, code) DO NOTHING;
+
+  -- 15. Root Administrator Seed
+  INSERT INTO public.profiles (id, tenant_id, email, full_name, role, status, metadata)
+  VALUES (
+    '00000000-0000-0000-0000-000000000002',
+    v_tid,
+    'zacma@admin',
+    'Zacma Administrator',
+    'admin',
+    'active',
+    '{"is_root_admin": true}'::jsonb
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    role = 'admin',
+    status = 'active',
+    updated_at = now();
 END $$;

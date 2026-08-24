@@ -144,7 +144,7 @@ def get_client_dashboard(user: dict = Depends(get_current_user)):
         {
             "id": "notif-payments",
             "title": "Active Payment Methods",
-            "message": "Instant checkout available via Chapa, or bank transfer (CBE, TeleBirr, Awash). Always upload your transfer receipt.",
+            "message": "Instant checkout available via SantimPay, or bank transfer (CBE, TeleBirr, Awash). Always upload your transfer receipt.",
             "type": "info",
             "created_at": datetime.now(timezone.utc).isoformat(),
             "read": False,

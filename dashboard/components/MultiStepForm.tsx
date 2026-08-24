@@ -114,7 +114,7 @@ export default function MultiStepForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: submissionSuccess.package.price,
-          provider_code: "chapa",
+          provider_code: "santimpay",
           customer_name: formData.full_name || submissionSuccess.data?.full_name || "Valued Client",
           customer_email: formData.email || submissionSuccess.data?.email || "client@zacmaa.net",
           customer_phone: formData.phone || submissionSuccess.data?.phone,
@@ -126,7 +126,7 @@ export default function MultiStepForm({
       });
 
       if (!res.ok) {
-        throw new Error("Failed to initialize Chapa payment checkout");
+        throw new Error("Failed to initialize SantimPay payment checkout");
       }
 
       const data = await res.json();
@@ -291,7 +291,7 @@ export default function MultiStepForm({
             </p>
           </div>
 
-          {/* Chapa Direct Online Payment Gateway Box */}
+          {/* SantimPay Direct Online Payment Gateway Box */}
           <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-950/80 via-slate-900 to-indigo-950/80 rounded-2xl border border-emerald-800/60 text-left space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-emerald-300 font-semibold text-xs sm:text-sm">
@@ -299,7 +299,7 @@ export default function MultiStepForm({
                 <span>Instant Payment & Direct Settlement</span>
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                Chapa Gateway
+                SantimPay Gateway
               </span>
             </div>
 
@@ -317,7 +317,7 @@ export default function MultiStepForm({
             </div>
 
             <p className="text-[11px] text-slate-400">
-              Click <strong className="text-emerald-300">&quot;Pay Now via Chapa&quot;</strong> below to complete your payment. Once verified, your application will be automatically activated.
+              Click <strong className="text-emerald-300">&quot;Pay Now via SantimPay&quot;</strong> below to complete your payment. Once verified, your application will be automatically activated.
             </p>
           </div>
 
@@ -339,12 +339,12 @@ export default function MultiStepForm({
               {initiatingPayment ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Redirecting to Chapa Checkout...
+                  Redirecting to SantimPay Checkout...
                 </>
               ) : (
                 <>
                   <CreditCard className="w-4 h-4" />
-                  Pay Now via Chapa ({submissionSuccess.package.price.toLocaleString()} ETB) →
+                  Pay Now via SantimPay ({submissionSuccess.package.price.toLocaleString()} ETB) →
                 </>
               )}
             </button>
@@ -698,7 +698,7 @@ export default function MultiStepForm({
                 </div>
                 <div className="text-right text-[11px] text-slate-400">
                   <p>Payment Processing:</p>
-                  <p className="font-semibold text-emerald-300">Chapa Direct Secure Checkout</p>
+                  <p className="font-semibold text-emerald-300">SantimPay Direct Secure Checkout</p>
                 </div>
               </div>
             </div>

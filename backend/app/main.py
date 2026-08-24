@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
+from app.core.db import supabase
 from app.core.middleware import AuthMiddleware, AuditLoggingMiddleware
 
 # Shared Core & Domain Routers
@@ -119,7 +120,13 @@ if _ai_available:
 
 @app.on_event("startup")
 async def startup_event():
-    """Verify live Telegram bot and register Google Pub/Sub listeners on startup."""
+    """Verify live Telegram bot, register Google Pub/Sub listeners, and ensure admin profile in database."""
+    try:
+        from app.services.supabase_auth_service import SupabaseAuthService
+        SupabaseAuthService.ensure_admin_account()
+    except Exception as sb_err:
+        logger.debug("Startup Supabase admin check notice: %s", sb_err)
+
     try:
         from app.services.event_bus import event_bus
         from app.services.pubsub_service import PubSubService
@@ -150,6 +157,9 @@ def health() -> dict:
     return {
         "status": "ok",
         "app": "Zacma Business Management Platform",
+        "version": settings.app_version,
+        "environment": settings.app_environment,
+        "database": "supabase" if supabase is not None else "demo",
         "telegram_bot": "@ZacmaBusinessSupportAI_bot",
     }
 

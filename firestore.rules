@@ -1,0 +1,77 @@
+﻿rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'superadmin';
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (request.auth.token.role in ['admin', 'superadmin']);
+    }
+    
+    function isStaff() {
+      return isAuthenticated() && (request.auth.token.role in ['staff', 'admin', 'superadmin']);
+    }
+    
+    function isFinance() {
+      return isAuthenticated() && (request.auth.token.role in ['finance', 'admin', 'superadmin']);
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && (request.auth.uid == userId || request.auth.token.email == userId);
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin() || isStaff());
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow delete: if isSuperAdmin();
+    }
+
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated() && (
+        resource.data.customer_email == request.auth.token.email ||
+        resource.data.contact_id == request.auth.uid ||
+        isFinance()
+      );
+      allow create, update, delete: if isFinance();
+    }
+
+    match /support_tickets/{ticketId} {
+      allow read: if isAuthenticated() && (
+        resource.data.email == request.auth.token.email ||
+        isStaff()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.email == request.auth.token.email ||
+        isStaff()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /applications/{applicationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.email == request.auth.token.email ||
+        resource.data.user_id == request.auth.uid ||
+        isStaff()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.email == request.auth.token.email ||
+        isStaff()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+  }
+}

@@ -30,20 +30,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        setSession({
-          role: parsed.role ?? null,
-          email: parsed.email ?? null,
-          fullName: parsed.fullName ?? null,
-          token: parsed.token ?? null,
-          userId: parsed.userId ?? null,
-          phone: parsed.phone ?? null,
-        });
-      }
-    } catch {}
+    let isMounted = true;
+    const hydrateAndVerify = async () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const currentSession: UserSession = {
+            role: parsed.role ?? null,
+            email: parsed.email ?? null,
+            fullName: parsed.fullName ?? null,
+            token: parsed.token ?? null,
+            userId: parsed.userId ?? null,
+            phone: parsed.phone ?? null,
+          };
+          if (isMounted) setSession(currentSession);
+
+          if (parsed.token) {
+            const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+            const res = await fetch(`${apiBase}/api/v1/auth/me`, {
+              headers: { Authorization: `Bearer ${parsed.token}` },
+              credentials: "include",
+            }).catch(() => null);
+
+            if (res && res.status === 401 && isMounted) {
+              logout();
+            } else if (res && res.ok && isMounted) {
+              const freshUser = await res.json().catch(() => null);
+              if (freshUser && freshUser.role) {
+                setSession((prev) => ({
+                  ...prev,
+                  role: freshUser.role,
+                  email: freshUser.email,
+                  fullName: freshUser.full_name,
+                }));
+              }
+            }
+          }
+        }
+      } catch {}
+    };
+
+    hydrateAndVerify();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -52,14 +83,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, [session]);
 
-  function setCookieRole(r: string | null, e?: string | null) {
+  function setCookieRole(r: string | null, e?: string | null, t?: string | null) {
     try {
       if (r) {
         document.cookie = `zacma_user_role=${encodeURIComponent(r)}; path=/`;
         if (e) document.cookie = `zacma_user_email=${encodeURIComponent(e)}; path=/`;
+        if (t) document.cookie = `zacma_session=${encodeURIComponent(t)}; path=/`;
       } else {
         document.cookie = `zacma_user_role=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
         document.cookie = `zacma_user_email=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+        document.cookie = `zacma_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
       }
     } catch {}
   }
@@ -80,10 +113,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       phone: phone ?? null,
     };
     setSession(newSession);
-    setCookieRole(r, e);
+    setCookieRole(r, e, token);
   }
 
   function logout() {
+    const currentToken = session.token;
     setSession({
       role: null,
       email: null,
@@ -93,6 +127,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       phone: null,
     });
     setCookieRole(null);
+    if (currentToken) {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+      fetch(`${apiBase}/api/v1/auth/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentToken}`,
+        },
+        credentials: "include",
+      }).catch(() => null);
+    }
   }
 
   return (

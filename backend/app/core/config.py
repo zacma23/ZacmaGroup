@@ -43,28 +43,64 @@ class Settings(BaseSettings):
         default="",
         validation_alias=AliasChoices("SUPABASE_SERVICE_KEY", "SUPABASE_SERVICE_ROLE_KEY"),
     )
+    supabase_anon_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    )
+    supabase_jwt_secret: str = Field(
+        default="",
+        validation_alias=AliasChoices("SUPABASE_JWT_SECRET"),
+    )
     database_url: str = Field(
         default="postgresql://postgres:postgres@localhost:5432/zacma",
         validation_alias=AliasChoices("DATABASE_URL", "DB_URL"),
     )
 
-    # Payment Configuration (Multi-Provider Platform)
+    # Payment Configuration (SantimPay & Multi-Provider Platform)
     payment_environment: str = Field(
         default="test",
         validation_alias=AliasChoices("PAYMENT_ENV", "PAYMENT_ENVIRONMENT"),
     )
-    default_payment_methods: str = "Chapa,CBE,TeleBirr,Awash,Abyssinia"
-    chapa_base_url: str = "https://api.chapa.co/v1"
-    chapa_secret_key: str = Field(default="", validation_alias=AliasChoices("CHAPA_SECRET_KEY", "CHAPA_KEY"))
-    chapa_public_key: str = Field(default="", validation_alias=AliasChoices("CHAPA_PUBLIC_KEY"))
-    chapa_webhook_secret: str = Field(default="", validation_alias=AliasChoices("CHAPA_WEBHOOK_SECRET"))
-    chapa_callback_url: str = Field(
-        default="http://127.0.0.1:8000/api/v1/payments/webhooks/chapa",
-        validation_alias=AliasChoices("CHAPA_CALLBACK_URL"),
+    default_payment_methods: str = "SantimPay,CBE,TeleBirr,Awash,Abyssinia"
+    santimpay_merchant_id: str = Field(
+        default="",
+        validation_alias=AliasChoices("SANTIMPAY_MERCHANT_ID", "GATEWAY_MERCHANT_ID"),
     )
-    chapa_return_url: str = Field(
+    santimpay_gateway_token: str = Field(
+        default="",
+        validation_alias=AliasChoices("SANTIMPAY_GATEWAY_TOKEN", "SANTIMPAY_TOKEN"),
+    )
+    santimpay_private_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("SANTIMPAY_PRIVATE_KEY", "PRIVATE_KEY_IN_PEM"),
+    )
+    santimpay_public_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("SANTIMPAY_PUBLIC_KEY"),
+    )
+    santimpay_base_url: str = Field(
+        default="https://services.santimpay.com/api/v1/gateway",
+        validation_alias=AliasChoices("SANTIMPAY_BASE_URL", "SANTIMPAY_API_URL"),
+    )
+    santimpay_testbed: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("SANTIMPAY_TESTBED", "SANTIMPAY_TEST_BED"),
+    )
+    santimpay_callback_url: str = Field(
+        default="http://127.0.0.1:8000/api/v1/payments/webhooks/santimpay",
+        validation_alias=AliasChoices("SANTIMPAY_CALLBACK_URL", "SANTIMPAY_NOTIFY_URL"),
+    )
+    santimpay_return_url: str = Field(
         default="http://localhost:3000/portal?payment_status=success",
-        validation_alias=AliasChoices("CHAPA_RETURN_URL"),
+        validation_alias=AliasChoices("SANTIMPAY_RETURN_URL", "SANTIMPAY_SUCCESS_URL"),
+    )
+    santimpay_failure_url: str = Field(
+        default="http://localhost:3000/portal?payment_status=failed",
+        validation_alias=AliasChoices("SANTIMPAY_FAILURE_URL"),
+    )
+    santimpay_cancel_url: str = Field(
+        default="http://localhost:3000/portal?payment_status=cancelled",
+        validation_alias=AliasChoices("SANTIMPAY_CANCEL_URL"),
     )
 
     # Storage & Uploads
@@ -107,10 +143,27 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("TELEGRAM_BOT_TOKEN", "TELEGRAM_TOKEN"),
     )
 
-    # Security
+    # Security & Session Management
     secret_key: str = "secret-jwt-signing-key-override-this"
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 1440  # 24 hours
+    session_cookie_name: str = "zacma_session"
+    session_cookie_secure: bool = False  # Set True in production HTTPS
+    session_cookie_httponly: bool = True
+    session_cookie_samesite: str = "lax"
+    session_idle_timeout_minutes: int = 120
+    phone_auth_rate_limit_per_hour: int = 5
+    email_verification_required: bool = False
+
+    # Administrator Account Credentials (Configured via Environment Variables)
+    admin_username: str = Field(
+        default="zacma@admin",
+        validation_alias=AliasChoices("ADMIN_USERNAME", "ZACMA_ADMIN_USERNAME", "ADMIN_USER"),
+    )
+    admin_password: str = Field(
+        default="zacma@11",
+        validation_alias=AliasChoices("ADMIN_PASSWORD", "ZACMA_ADMIN_PASSWORD", "ADMIN_PASS"),
+    )
 
     @property
     def allowed_origins(self) -> list[str]:

@@ -72,7 +72,7 @@ const PLATFORMS = [
     description:
       "Modern digital commerce engine supporting single-brand stores and multi-vendor marketplaces with direct local payment gateway checkout and courier logistics.",
     highlights: [
-      "Ethiopian Payment Gateways: TeleBirr, CBE Birr & Chapa checkout",
+      "Ethiopian Payment Gateways: TeleBirr, CBE Birr & SantimPay checkout",
       "Multi-Vendor Merchant Management with automated commission splits",
       "Dynamic Product Catalogs, Stock Alerts & Variant Management",
       "Courier Integration with real-time SMS delivery tracking",

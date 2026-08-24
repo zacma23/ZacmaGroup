@@ -32,7 +32,7 @@ export default function ClientFooter() {
                 Automated Payment Gateway
               </p>
               <p className="text-lg font-bold text-white font-mono tracking-wide">
-                Chapa Direct Secure Checkout <span className="text-xs text-slate-300 font-sans font-normal">(Instant Settlement & Verification)</span>
+                SantimPay Direct Secure Checkout <span className="text-xs text-slate-300 font-sans font-normal">(Instant Settlement & Verification)</span>
               </p>
             </div>
           </div>

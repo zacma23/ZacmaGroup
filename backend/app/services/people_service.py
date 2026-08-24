@@ -364,7 +364,7 @@ class PeopleService:
         all_invoices = invoices_store.list_all(tenant_id)
         invoices = [
             i for i in all_invoices
-            if (email and i.get("customer_email", "").lower() == email)
+            if (email and (i.get("customer_email") or "").lower() == email)
             or i.get("customer_name") == full_name
             or (person.get("crm_contact_id") and i.get("contact_id") == person.get("crm_contact_id"))
         ]

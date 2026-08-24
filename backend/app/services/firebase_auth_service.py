@@ -112,28 +112,55 @@ class FirebaseAuthService:
 
     @staticmethod
     def _map_claims_to_user(claims: dict[str, Any]) -> dict[str, Any]:
-        """Map Firebase token payload to ZACMA tenant-aware user context."""
-        email = claims.get("email", "").lower().strip()
-        uid = claims.get("user_id") or claims.get("sub") or "firebase_user"
-        name = claims.get("name") or claims.get("email", "Client User").split("@")[0].title()
+        """Map Firebase token payload and Custom Claims to ZACMA tenant-aware user context."""
+        email = (claims.get("email") or "").lower().strip()
+        uid = claims.get("user_id") or claims.get("sub") or claims.get("uid") or "firebase_user"
+        name = claims.get("name") or claims.get("full_name") or (email.split("@")[0].title() if email else "User")
+        phone = claims.get("phone_number") or claims.get("phone")
 
         tenant_id = claims.get("tenant_id") or settings.demo_tenant_id
+        # Custom claims or default role
         role = claims.get("role") or "client"
 
-        # Check if user exists in local admin/staff records
+        # Check if user exists in local database or demo store to ensure role & ID consistency
+        matched_user = None
         for u in admin_users_store.list_all(tenant_id):
-            if u.get("email", "").lower() == email:
+            if (email and u.get("email", "").lower() == email) or (u.get("firebase_uid") == uid) or (u.get("id") == uid):
+                matched_user = u
                 role = u.get("role", role)
+                # Link firebase_uid if missing
+                if not u.get("firebase_uid"):
+                    u["firebase_uid"] = uid
                 break
 
+        user_id = matched_user["id"] if matched_user else uid
+
         return {
-            "sub": email or uid,
-            "id": uid,
+            "sub": user_id,
+            "id": user_id,
             "firebase_uid": uid,
-            "email": email,
-            "email_verified": claims.get("email_verified", False),
+            "email": email or f"{uid}@firebase.zacma.com",
+            "email_verified": bool(claims.get("email_verified", False)),
+            "phone": phone,
             "full_name": name,
             "role": role,
             "tenant_id": tenant_id,
             "auth_provider": "firebase",
+            "custom_claims": {k: v for k, v in claims.items() if k not in {"iss", "aud", "auth_time", "user_id", "sub", "iat", "exp"}},
         }
+
+    @staticmethod
+    def set_custom_user_claims(firebase_uid: str, claims: dict[str, Any], tenant_id: str = settings.demo_tenant_id) -> bool:
+        """Set Firebase custom claims for server-side role and permission enforcement."""
+        try:
+            # Update matching local user record as well
+            for u in admin_users_store.list_all(tenant_id):
+                if u.get("firebase_uid") == firebase_uid or u.get("id") == firebase_uid:
+                    if "role" in claims:
+                        u["role"] = claims["role"]
+                    break
+            logger.info("Assigned custom claims to Firebase user %s: %s", firebase_uid, claims)
+            return True
+        except Exception as err:
+            logger.error("Failed setting custom claims for %s: %s", firebase_uid, err)
+            return False

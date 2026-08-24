@@ -148,7 +148,7 @@ class AdminSearchService:
                 "module": "Payments",
                 "entity_type": "payment_transaction",
                 "title": f"Payment {tx.get('public_reference', tx['id'][:8])} — {tx.get('amount', 0):,.2f} {tx.get('currency', 'ETB')}",
-                "subtitle": f"Customer: {tx.get('customer_name', 'Anonymous')} | Provider: {tx.get('provider_code', 'Chapa').upper()}",
+                "subtitle": f"Customer: {tx.get('customer_name', 'Anonymous')} | Provider: {tx.get('provider_code', 'SantimPay').upper()}",
                 "status": tx.get("status", "pending"),
                 "email": tx.get("customer_email"),
                 "phone": tx.get("customer_phone"),

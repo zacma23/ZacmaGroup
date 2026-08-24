@@ -91,7 +91,7 @@ export default function ContactPage() {
                 Payment Platform & Gateways
               </span>
               <h3 className="text-xl sm:text-2xl font-bold text-white mt-0.5">
-                Chapa Online & Multi-Bank Transfers
+                SantimPay Online & Multi-Bank Transfers
               </h3>
               <p className="text-xs text-slate-300">Commercial Bank of Ethiopia (CBE), TeleBirr, Awash Bank & Bank of Abyssinia</p>
             </div>

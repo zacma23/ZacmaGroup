@@ -389,7 +389,7 @@ export default function SoftwareDevelopmentPage() {
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="mt-1.5 block w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500"
                     >
-                      <option value="Chapa">Chapa Online Checkout (Cards / Wallets)</option>
+                      <option value="SantimPay">SantimPay Online Checkout (Cards / Wallets)</option>
                       <option value="CBE">Commercial Bank of Ethiopia (CBE)</option>
                       <option value="TeleBirr">TeleBirr Mobile Money</option>
                       <option value="Awash">Awash Bank Transfer</option>

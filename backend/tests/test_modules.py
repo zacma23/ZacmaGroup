@@ -154,7 +154,9 @@ def test_marketing_campaigns_crud():
     assert client.delete(f"/api/v1/marketing/campaigns/{camp_id}").status_code == 204
 
 def test_dashboard_overview():
-    res = client.get("/api/v1/dashboard/overview")
+    from app.core.auth import create_access_token
+    token = create_access_token({"sub": "admin-1", "email": "admin@zacma.com", "role": "admin", "tenant_id": "zacma-demo"})
+    res = client.get("/api/v1/dashboard/overview", headers={"Authorization": f"Bearer {token}"})
     assert res.status_code == 200
     data = res.json()
     assert "metrics" in data

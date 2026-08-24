@@ -17,6 +17,7 @@ from app.core.demo_data import (
     campaigns_store,
     audit_logs_store,
 )
+from app.core.permissions import require_role
 from app.core.tenancy import get_tenant_id
 
 
@@ -152,7 +153,10 @@ def _service_status() -> list[dict[str, str]]:
 
 
 @router.get("/overview")
-def get_overview(tenant_id: str = Depends(get_tenant_id)) -> dict[str, Any]:
+def get_overview(
+    tenant_id: str = Depends(get_tenant_id),
+    _user: dict = Depends(require_role(["admin", "superadmin", "staff", "finance", "hrm", "manager"])),
+) -> dict[str, Any]:
     """Return the dashboard summary with live metrics from data stores."""
     counts = _get_counts(tenant_id)
 

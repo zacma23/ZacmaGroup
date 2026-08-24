@@ -39,7 +39,7 @@ def test_public_active_providers_sanitization():
     assert len(providers) >= 3
 
     provider_codes = [p["provider_code"] for p in providers]
-    assert "chapa" in provider_codes
+    assert "santimpay" in provider_codes
     assert "cbe" in provider_codes
     assert "telebirr" in provider_codes
 
@@ -53,11 +53,11 @@ def test_public_active_providers_sanitization():
             assert p["account_number"] != "1000140145797"
 
 
-def test_initialize_payment_transaction_chapa():
+def test_initialize_payment_transaction_santimpay():
     """Verify initializing a payment generates a unique ZACMA-2026-XXXXXXXX reference and hosted checkout URL."""
     payload = {
         "amount": 2500.0,
-        "provider_code": "chapa",
+        "provider_code": "santimpay",
         "customer_name": "Almaz Tesfaye",
         "customer_email": "almaz.t@example.com",
         "payment_purpose": "Software Architecture Deposit",
@@ -73,7 +73,7 @@ def test_initialize_payment_transaction_chapa():
     assert data["amount"] == 2500.0
     assert data["currency"] == "ETB"
     assert data["checkout_url"] is not None
-    assert "checkout.chapa.co" in data["checkout_url"]
+    assert "santimpay" in data["checkout_url"].lower()
 
 
 def test_initialize_payment_transaction_cbe_bank_transfer():
@@ -102,7 +102,7 @@ def test_server_side_verification_and_auto_completion(admin_token):
         "/api/v1/payments/transactions/initialize",
         json={
             "amount": 1800.0,
-            "provider_code": "chapa",
+            "provider_code": "santimpay",
             "customer_name": "Tigist Hailu",
             "payment_purpose": "AI Course Fee",
         },
@@ -262,7 +262,7 @@ def test_customer_public_verification_and_duplicate_idempotency():
         "/api/v1/payments/transactions/initialize",
         json={
             "amount": 5000.0,
-            "provider_code": "chapa",
+            "provider_code": "santimpay",
             "customer_name": "Abebe Bikila",
             "customer_email": "abebe.b@example.com",
             "customer_phone": "+251911223344",

@@ -4,12 +4,12 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminTenantsPage() {
   const cookieStore = cookies();
-  const role = cookieStore.get("zacma_user_role")?.value ?? "admin";
-  if (role !== "admin") {
+  const role = cookieStore.get("zacma_user_role")?.value;
+  if (!role || role !== "admin") {
     return (
       <div className="container">
         <h1 className="text-xl font-semibold">Access denied</h1>
-        <p className="mt-2 text-sm text-gray-300">You do not have permission to view this page.</p>
+        <p className="mt-2 text-sm text-gray-300">You do not have permission to view this page. Administrator authorization required.</p>
       </div>
     );
   }

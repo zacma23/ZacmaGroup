@@ -184,7 +184,7 @@ export default function AdminReviewsPage() {
               <h1 className="text-2xl font-bold text-white tracking-tight">Client Case Reviews & Approvals</h1>
             </div>
             <p className="text-slate-400 text-sm mt-1">
-              Verify client payment receipts (Chapa / CBE / TeleBirr / Awash), inspect AI deliverables, and issue final service approvals.
+              Verify client payment receipts (SantimPay / CBE / TeleBirr / Awash), inspect AI deliverables, and issue final service approvals.
             </p>
           </div>
 

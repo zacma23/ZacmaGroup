@@ -184,7 +184,7 @@ export default function HomePage() {
                   Payment Platform:
                 </span>
                 <span className="font-semibold text-emerald-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
-                  Instant Chapa Checkout & Multi-Bank Transfers
+                  Instant SantimPay Checkout & Multi-Bank Transfers
                 </span>
                 <span className="text-slate-400">CBE · TeleBirr · Awash</span>
               </div>
@@ -462,7 +462,7 @@ export default function HomePage() {
               </div>
               <h4 className="text-sm font-bold text-white">Transparent Multi-Provider Payments</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Direct integration with Chapa online checkout, Commercial Bank of Ethiopia (CBE), TeleBirr, Awash, and Abyssinia.
+                Direct integration with SantimPay online checkout, Commercial Bank of Ethiopia (CBE), TeleBirr, Awash, and Abyssinia.
               </p>
             </div>
 

@@ -58,6 +58,20 @@ class VerifyAccountRequest(BaseModel):
     token: str
     type: str = "email_verify"
 
+class FirebaseLoginRequest(BaseModel):
+    id_token: str = Field(min_length=1)
+    remember_me: bool = False
+
+class PhoneOtpSendRequest(BaseModel):
+    phone: str = Field(min_length=9, max_length=20)
+
+class PhoneOtpVerifyRequest(BaseModel):
+    phone: str = Field(min_length=9, max_length=20)
+    otp: str = Field(min_length=4, max_length=10)
+
+class EmailResendRequest(BaseModel):
+    email: EmailStr
+
 class ProfileUpdateRequest(BaseModel):
     full_name: Optional[str] = None
     phone: Optional[str] = None
@@ -505,6 +519,7 @@ class LeadResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 class PaymentMethodEnum(str, Enum):
+    SANTIMPAY = "SantimPay"
     TELEBIRR = "TeleBirr"
     CBE = "CBE"
     AWASH = "Awash"

@@ -95,7 +95,7 @@ class TelegramPaymentBotService:
         amount = transaction.get("amount", 0.0)
         currency = transaction.get("currency", "ETB")
         customer = transaction.get("customer_name") or "Valued Customer"
-        provider = transaction.get("provider_code", "Chapa").upper()
+        provider = transaction.get("provider_code", "SantimPay").upper()
         purpose = transaction.get("payment_purpose") or transaction.get("description") or "ZACMA Services"
 
         msg = (
@@ -111,7 +111,7 @@ class TelegramPaymentBotService:
 
         buttons = []
         if checkout_url:
-            buttons.append([{"text": f"💳 Pay {amount:,.2f} {currency} (Chapa / Telebirr)", "url": checkout_url}])
+            buttons.append([{"text": f"💳 Pay {amount:,.2f} {currency} (SantimPay / Telebirr)", "url": checkout_url}])
         buttons.append([{"text": "🌐 Open Zacma Client Portal", "url": "http://localhost:3000/portal"}])
 
         reply_markup = {"inline_keyboard": buttons}
@@ -138,7 +138,7 @@ class TelegramPaymentBotService:
         amount = transaction.get("amount", 0.0)
         currency = transaction.get("currency", "ETB")
         customer = transaction.get("customer_name") or "Valued Customer"
-        provider = transaction.get("provider_code", "Chapa").upper()
+        provider = transaction.get("provider_code", "SantimPay").upper()
 
         msg = (
             f"✅ <b>PAYMENT CONFIRMATION RECEIPT</b>\n\n"
@@ -179,7 +179,7 @@ class TelegramPaymentBotService:
                 "👋 <b>Welcome to Zacma Group Business Support & Payment Assistant!</b>\n\n"
                 "I can assist you with:\n"
                 "• 💳 Checking payment and invoice statuses\n"
-                "• 🚀 Generating secure payment links (Chapa, Telebirr, CBE)\n"
+                "• 🚀 Generating secure payment links (SantimPay, Telebirr, CBE)\n"
                 "• 🎓 Student Academy enrollments\n"
                 "• ✈️ Visa & Travel assistance\n\n"
                 "<b>Commands:</b>\n"

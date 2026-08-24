@@ -517,7 +517,7 @@ export default function PaymentsPlatformPage() {
               className="px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
             >
               <option value="all">All Providers</option>
-              <option value="chapa">Chapa</option>
+              <option value="santimpay">SantimPay</option>
               <option value="cbe">CBE</option>
               <option value="telebirr">TeleBirr</option>
               <option value="awash">Awash Bank</option>
@@ -813,7 +813,7 @@ export default function PaymentsPlatformPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Chapa or CBE"
+                    placeholder="e.g. SantimPay or CBE"
                     value={formData.provider_name}
                     onChange={(e) => setFormData({ ...formData, provider_name: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-emerald-500"
@@ -824,7 +824,7 @@ export default function PaymentsPlatformPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. chapa or cbe"
+                    placeholder="e.g. santimpay or cbe"
                     value={formData.provider_code}
                     onChange={(e) => setFormData({ ...formData, provider_code: e.target.value.toLowerCase() })}
                     className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-emerald-500 font-mono"
@@ -902,7 +902,7 @@ export default function PaymentsPlatformPage() {
                   <Lock className="w-3.5 h-3.5 text-amber-400" /> Secure API Credentials
                 </span>
                 <div>
-                  <label className="block text-slate-400 mb-1">Secret Key (CHAPA_SECRET_KEY / Private Key)</label>
+                  <label className="block text-slate-400 mb-1">Secret Key (SANTIMPAY_PRIVATE_KEY / Private Key)</label>
                   <input
                     type="password"
                     placeholder={editingProvider?.has_secret_key ? "•••••••••••• (Leave blank to keep existing)" : "Enter Secret Key"}

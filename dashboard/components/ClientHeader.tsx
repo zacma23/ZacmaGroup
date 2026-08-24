@@ -92,7 +92,7 @@ export default function ClientHeader() {
             </span>
             <span className="hidden md:inline text-slate-500">|</span>
             <span className="hidden md:inline text-slate-400">
-              💳 Secure Instant Checkout via <strong className="text-emerald-300 font-semibold">Chapa (Telebirr, CBE, Awash, Abyssinia & Cards)</strong>
+              💳 Secure Instant Checkout via <strong className="text-emerald-300 font-semibold">SantimPay (Telebirr, CBE, Awash, Abyssinia & Cards)</strong>
             </span>
           </div>
 

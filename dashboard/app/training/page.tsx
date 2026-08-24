@@ -171,7 +171,7 @@ export default function TrainingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: activePkg.price,
-          provider_code: "chapa",
+          provider_code: "santimpay",
           customer_name: successResult.full_name || fullName || "Student",
           customer_email: successResult.email || email || "student@zacmaa.net",
           customer_phone: successResult.phone || phone,
@@ -184,7 +184,7 @@ export default function TrainingPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(formatApiErrorMessage(data?.detail, "Failed to initialize Chapa payment checkout"));
+        throw new Error(formatApiErrorMessage(data?.detail, "Failed to initialize SantimPay payment checkout"));
       }
 
       if (data.checkout_url) {
@@ -193,7 +193,7 @@ export default function TrainingPage() {
         throw new Error("No checkout URL returned from payment gateway");
       }
     } catch (err: any) {
-      setPaymentError(err.message || "Could not connect to Chapa payment gateway. Please try again.");
+      setPaymentError(err.message || "Could not connect to SantimPay payment gateway. Please try again.");
     } finally {
       setInitiatingPayment(false);
     }
@@ -312,7 +312,7 @@ export default function TrainingPage() {
             </div>
           </div>
 
-          {/* Chapa Direct Online Payment Gateway Box */}
+          {/* SantimPay Direct Online Payment Gateway Box */}
           <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-slate-900 to-indigo-950/80 border border-emerald-800/60 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-emerald-300 font-semibold text-xs sm:text-sm">
@@ -320,7 +320,7 @@ export default function TrainingPage() {
                 <span>Tuition Payment & Instant Enrollment</span>
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                Chapa Gateway
+                SantimPay Gateway
               </span>
             </div>
 
@@ -346,12 +346,12 @@ export default function TrainingPage() {
               {initiatingPayment ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Redirecting to Chapa Checkout...
+                  Redirecting to SantimPay Checkout...
                 </>
               ) : (
                 <>
                   <CreditCard className="w-4 h-4" />
-                  Pay Tuition Now via Chapa →
+                  Pay Tuition Now via SantimPay →
                 </>
               )}
             </button>
@@ -713,7 +713,7 @@ export default function TrainingPage() {
                   className="mt-1 block w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
                 >
                   <option value="CBE">Commercial Bank of Ethiopia (CBE)</option>
-                  <option value="Chapa">Chapa Online Checkout (Cards / Wallets)</option>
+                  <option value="SantimPay">SantimPay Online Checkout (Cards / Wallets)</option>
                   <option value="TeleBirr">TeleBirr Mobile Money</option>
                   <option value="Awash">Awash Bank Transfer</option>
                   <option value="Abyssinia">Bank of Abyssinia</option>
