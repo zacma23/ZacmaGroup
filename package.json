@@ -23,6 +23,8 @@
   "homepage": "https://github.com/zacma23/ZacmaGroup#readme",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",
+    "claude": "^0.1.1",
+    "code": "^5.2.4",
     "dotenv": "^17.4.2",
     "openai": "^7.4.0"
   }

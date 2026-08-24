@@ -1,8 +1,10 @@
+import { cookies } from "next/headers";
+
+export const dynamic = "force-dynamic";
+
 export default async function AdminUsersPage(){
-  // Role guard reading role from request cookies
-  const { cookies } = await import('next/headers');
   const cookieStore = cookies();
-  const role = cookieStore.get('zacma_user_role')?.value ?? "admin";
+  const role = cookieStore.get("zacma_user_role")?.value ?? "admin";
   if (role !== "admin") {
     return (
       <div className="container">
@@ -12,10 +14,9 @@ export default async function AdminUsersPage(){
     );
   }
 
-  // Attempt to fetch user profiles from backend; if missing, show sample message
   const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
-  const preview = cookieStore.get('zacma_preview_customer')?.value;
-  const headers: Record<string, string> = preview ? { 'x-preview-customer': preview } : {};
+  const preview = cookieStore.get("zacma_preview_customer")?.value;
+  const headers: Record<string, string> = preview ? { "x-preview-customer": preview } : {};
 
   try {
     const res = await fetch(`${apiBase}/api/v1/admin/users`, { cache: "no-store", headers });
@@ -25,7 +26,7 @@ export default async function AdminUsersPage(){
       return (
         <div className="container">
           <h1 className="text-xl font-semibold">User & Role Management</h1>
-          <p className="mt-2 text-sm text-gray-300">No live user list available — the backend endpoint /api/v1/admin/users is not present. Show sample data or connect backend.</p>
+          <p className="mt-2 text-sm text-gray-300">No live user list available. Connect backend.</p>
         </div>
       );
     }
@@ -47,9 +48,13 @@ export default async function AdminUsersPage(){
             <tbody>
               {rows.map((r: any) => (
                 <tr key={r.id} className="border-b border-gray-800">
-                  <td className="py-2">{r.id}</td>
+                  <td className="py-2 font-mono text-xs">{r.id}</td>
                   <td className="py-2">{r.email ?? r.user_email ?? "—"}</td>
-                  <td className="py-2">{r.role ?? r.user_role ?? "—"}</td>
+                  <td className="py-2">
+                    <span className="px-2 py-0.5 text-xs rounded bg-slate-800 border border-slate-700">
+                      {r.role ?? r.user_role ?? "—"}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -2,30 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Minimal global styles for ZACMA dashboard */
+/* ZACMA Technology Group — Brand Design Tokens */
 :root {
-  --bg: #0f172a;
-  --fg: #e6eef8;
-  --accent: #3b82f6; /* default accent (tenant primary_color overrides expected at runtime) */
+  --zacma-red: #C8102E;
+  --zacma-red-dark: #A00C24;
+  --zacma-blue: #0B3D91;
+  --zacma-blue-dark: #072B68;
+  --bg: #0b1120;
+  --fg: #f8fafc;
+  --accent: #3b82f6;
 }
 
 html, body, #__next {
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg);
   color: var(--fg);
 }
 
-a { color: inherit; text-decoration: none; }
-
-/* basic container */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
+a {
+  color: inherit;
+  text-decoration: none;
 }
+
+/* Scrollbar polish */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Brand Button Styles */
+.btn-zacma-primary {
+  background-color: var(--zacma-red);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+.btn-zacma-primary:hover {
+  background-color: var(--zacma-red-dark);
+}
+
+.btn-zacma-secondary {
+  background-color: var(--zacma-blue);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+.btn-zacma-secondary:hover {
+  background-color: var(--zacma-blue-dark);
+}
+

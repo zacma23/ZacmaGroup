@@ -2,10 +2,17 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-interface AuthContextValue {
+export interface UserSession {
   role: string | null;
   email?: string | null;
-  login: (role: string, email?: string) => void;
+  fullName?: string | null;
+  token?: string | null;
+  userId?: string | null;
+  phone?: string | null;
+}
+
+interface AuthContextValue extends UserSession {
+  login: (role: string, email?: string, token?: string, fullName?: string, phone?: string) => void;
   logout: () => void;
 }
 
@@ -13,25 +20,37 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 const STORAGE_KEY = "zacma_user";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [role, setRole] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
+  const [session, setSession] = useState<UserSession>({
+    role: null,
+    email: null,
+    fullName: null,
+    token: null,
+    userId: null,
+    phone: null,
+  });
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        setRole(parsed.role ?? null);
-        setEmail(parsed.email ?? null);
+        setSession({
+          role: parsed.role ?? null,
+          email: parsed.email ?? null,
+          fullName: parsed.fullName ?? null,
+          token: parsed.token ?? null,
+          userId: parsed.userId ?? null,
+          phone: parsed.phone ?? null,
+        });
       }
     } catch {}
   }, []);
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ role, email }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
     } catch {}
-  }, [role, email]);
+  }, [session]);
 
   function setCookieRole(r: string | null, e?: string | null) {
     try {
@@ -45,19 +64,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }
 
-  function login(r: string, e?: string) {
-    setRole(r);
-    setEmail(e ?? null);
+  function login(
+    r: string,
+    e?: string,
+    token?: string,
+    fullName?: string,
+    phone?: string,
+  ) {
+    const newSession: UserSession = {
+      role: r,
+      email: e ?? null,
+      fullName: fullName ?? (e ? e.split("@")[0] : "User"),
+      token: token ?? null,
+      userId: e ? `usr-${Math.abs(e.split("").reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0)) % 100000}` : null,
+      phone: phone ?? null,
+    };
+    setSession(newSession);
     setCookieRole(r, e);
   }
 
   function logout() {
-    setRole(null);
-    setEmail(null);
+    setSession({
+      role: null,
+      email: null,
+      fullName: null,
+      token: null,
+      userId: null,
+      phone: null,
+    });
     setCookieRole(null);
   }
 
-  return <AuthContext.Provider value={{ role, email, login, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        ...session,
+        login,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

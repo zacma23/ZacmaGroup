@@ -1,0 +1,83 @@
+version: "3.9"
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: zacma-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-zacma.com}
+      - PORTAL_DOMAIN=${PORTAL_DOMAIN:-portal.zacma.com}
+      - API_DOMAIN=${API_DOMAIN:-api.zacma.com}
+      - N8N_DOMAIN=${N8N_DOMAIN:-n8n.zacma.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - backend_uploads:/var/www/uploads:ro
+    depends_on:
+      - backend
+      - dashboard
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: zacma-backend
+    restart: unless-stopped
+    env_file:
+      - ../backend/.env.production
+    environment:
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - backend_uploads:/app/uploads
+    depends_on:
+      - redis
+
+  dashboard:
+    build:
+      context: ../dashboard
+      dockerfile: Dockerfile
+    container_name: zacma-dashboard
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=https://${API_DOMAIN:-api.zacma.com}
+    depends_on:
+      - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: zacma-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: zacma-qdrant
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: zacma-n8n
+    restart: unless-stopped
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-ZacmaSecurePass2026!}
+      - WEBHOOK_URL=https://${N8N_DOMAIN:-n8n.zacma.com}/
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  caddy_data:
+  caddy_config:
+  backend_uploads:
+  redis_data:
+  qdrant_data:
+  n8n_data:

@@ -4,11 +4,28 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.embeddings import OllamaEmbeddings
 
-client = QdrantClient(url="http://localhost:6333")
-embeddings = OllamaEmbeddings(model="nomic-embed-text")
+_client = None
+_embeddings = None
+
+
+def get_qdrant_client():
+    global _client
+    if _client is None:
+        _client = QdrantClient(url="http://localhost:6333", timeout=1.0)
+    return _client
+
+
+def get_embeddings():
+    global _embeddings
+    if _embeddings is None:
+        _embeddings = OllamaEmbeddings(model="nomic-embed-text")
+    return _embeddings
 
 
 def ingest_document(file_path: str, collection: str, tenant_id: str) -> int:
+    client = get_qdrant_client()
+    embeddings = get_embeddings()
+
     collections = [c.name for c in client.get_collections().collections]
     if collection not in collections:
         client.create_collection(
@@ -39,6 +56,9 @@ def ingest_document(file_path: str, collection: str, tenant_id: str) -> int:
 
 
 def retrieve(query: str, collection: str, tenant_id: str, k: int = 4):
+    client = get_qdrant_client()
+    embeddings = get_embeddings()
+
     vector = embeddings.embed_query(query)
     results = client.search(
         collection_name=collection,

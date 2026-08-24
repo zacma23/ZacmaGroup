@@ -1,0 +1,51 @@
+# ===========================================================================
+# GOOGLE CLOUD WORKFLOWS — SERVICE FULFILLMENT ORCHESTRATION
+# ===========================================================================
+
+main:
+  params: [args]
+  steps:
+    - init:
+        assign:
+          - jobId: ${args.job_id}
+          - entityType: ${args.entity_type}
+          - entityId: ${args.entity_id}
+          - payload: ${args.payload}
+          - apiBase: ${default(map.get(args, "api_base"), "https://api.zacma.com/api/v1")}
+    - logStart:
+        call: sys.log
+        args:
+          text: ${"Starting ZACMA service fulfillment workflow for " + entityType + " (" + entityId + ")"}
+          severity: INFO
+    - notifyAutomationCallback:
+        try:
+          call: http.post
+          args:
+            url: ${apiBase + "/automation/callbacks/" + jobId}
+            headers:
+              Content-Type: "application/json"
+            body:
+              status: "completed"
+              result_data:
+                fulfillment_stage: "google_cloud_workflows_executed"
+                entity_type: ${entityType}
+                entity_id: ${entityId}
+              notes: "Service fulfillment successfully executed via Google Cloud Workflows."
+          result: callbackResult
+        retry:
+          predicate: ${http.default_retry_predicate}
+          max_retries: 3
+          backoff:
+            initial_delay: 2
+            max_delay: 60
+            multiplier: 2
+    - logFinish:
+        call: sys.log
+        args:
+          text: ${"Completed fulfillment for job " + jobId}
+          severity: INFO
+    - finish:
+        return:
+          jobId: ${jobId}
+          status: "COMPLETED"
+          result: ${callbackResult.body}

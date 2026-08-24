@@ -1,0 +1,65 @@
+# ===========================================================================
+# ZACMA PRODUCTION REVERSE PROXY CONFIGURATION (Caddy 2)
+# ===========================================================================
+
+{
+    email admin@zacma.com
+    admin off
+}
+
+# Main Frontend & Client Portal
+{$DOMAIN:zacma.com}, {$PORTAL_DOMAIN:portal.zacma.com} {
+    encode gzip zstd
+
+    # Proxy frontend requests to Next.js dashboard
+    reverse_proxy dashboard:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Security Headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}
+
+# Backend FastAPI API & Webhooks
+{$API_DOMAIN:api.zacma.com} {
+    encode gzip zstd
+
+    # Route static uploads directly or through FastAPI
+    handle /uploads/* {
+        root * /var/www/uploads
+        file_server
+    }
+
+    # Proxy API & Webhook traffic to FastAPI Backend
+    handle /* {
+        reverse_proxy backend:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+    }
+}
+
+# External Automation Engine (n8n)
+{$N8N_DOMAIN:n8n.zacma.com} {
+    reverse_proxy n8n:5678 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

@@ -2,33 +2,24 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import "./globals.css";
-import TopBar from "../components/TopBar";
-import Sidebar from "../components/Sidebar";
 import { PreviewProvider } from "../components/PreviewProvider";
-import PreviewBanner from "../components/PreviewBanner";
 import { SidebarProvider } from "../components/SidebarProvider";
 import { AuthProvider } from "../components/AuthProvider";
+import AppLayoutWrapper from "../components/AppLayoutWrapper";
 
 export const metadata: Metadata = {
-  title: "ZACMA Operations Dashboard",
-  description: "Local operations overview for the ZACMA Group AI Platform.",
+  title: "Zacma Technology Group — Client Portal & Business Platform",
+  description: "Unified Client Portal for Visa Consulting, Travel Agency, Training Institute, and Marketing Services.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body>
         <AuthProvider>
           <PreviewProvider>
             <SidebarProvider>
-              <div className="min-h-screen flex text-gray-100">
-                <Sidebar />
-                <div className="flex-1 flex flex-col">
-                  <TopBar />
-                  <PreviewBanner />
-                  <main className="p-6 bg-slate-900 min-h-[calc(100vh-56px)]">{children}</main>
-                </div>
-              </div>
+              <AppLayoutWrapper>{children}</AppLayoutWrapper>
             </SidebarProvider>
           </PreviewProvider>
         </AuthProvider>
@@ -36,3 +27,4 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     </html>
   );
 }
+
