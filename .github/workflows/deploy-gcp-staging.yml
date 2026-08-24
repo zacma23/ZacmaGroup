@@ -1,10 +1,11 @@
-name: Deploy to Google Cloud Staging
+name: Deploy to Google Cloud Run Production & Staging
 
 on:
   push:
     branches:
       - main
       - staging
+  workflow_dispatch:
 
 jobs:
   test-and-verify:
@@ -43,7 +44,7 @@ jobs:
           npm run build
 
   deploy-cloud-run:
-    name: Deploy to Google Cloud Run Staging
+    name: Deploy to Google Cloud Run
     needs: test-and-verify
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
@@ -66,11 +67,12 @@ jobs:
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Deploy to Cloud Run Staging
+      - name: Deploy to Cloud Run Production
         if: ${{ env.GCP_SA_KEY != '' }}
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || 'zacma-platform' }}
+          GCP_REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
         run: |
-          chmod +x infrastructure/gcp/deploy_cloud_run.sh
-          cd infrastructure/gcp && ./deploy_cloud_run.sh
+          chmod +x infrastructure/gcp/*.sh
+          cd infrastructure/gcp && ./deploy_production.sh

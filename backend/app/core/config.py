@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     )
     app_version: str = "0.1.0"
     api_v1_prefix: str = "/api/v1"
-    cors_origins: str = "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001"
+    cors_origins: str = "https://zacmagroup.com,https://www.zacmagroup.com,https://api.zacmagroup.com,http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001"
     demo_mode: bool = True
     demo_tenant_id: str = "zacma-demo"
 
