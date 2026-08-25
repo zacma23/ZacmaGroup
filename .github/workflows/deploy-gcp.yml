@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || 'zacma-production' }}
-  REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID || secrets.GCP_PROJECT_ID || 'zacmagroupaiautomation' }}
+  REGION: ${{ vars.GCP_REGION || secrets.GCP_REGION || 'us-central1' }}
   GAR_REPO: 'zacma-repo'
   BACKEND_SERVICE: 'zacma-backend'
   FRONTEND_SERVICE: 'zacma-frontend'

@@ -5,7 +5,8 @@
 set -euo pipefail
 
 # Default Configuration
-PROJECT_ID="${GCP_PROJECT_ID:-$(gcloud config get-value project 2>/dev/null || echo "")}"
+PROJECT_ID="${GCP_PROJECT_ID:-zacmagroupaiautomation}"
+PROJECT_NUMBER="${GCP_PROJECT_NUMBER:-659536564001}"
 REGION="${GCP_REGION:-us-central1}"
 ARTIFACT_REPO="${GCP_ARTIFACT_REPO:-zacma-repo}"
 BACKEND_SERVICE="zacma-backend"
