@@ -1,0 +1,5 @@
+# Robots.txt for ZACMA Group
+User-agent: *
+Allow: /
+Disallow: /dashboard/admin/
+Disallow: /api/

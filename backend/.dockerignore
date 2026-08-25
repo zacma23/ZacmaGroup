@@ -5,6 +5,7 @@ __pycache__
 .Python
 .venv
 venv/
+ENV/
 env/
 .pytest_cache
 .coverage
@@ -12,9 +13,7 @@ htmlcov/
 .git
 .gitignore
 .env
-.env.*
-!.env.example
+.env.local
+.env.development
+.env.test
 *.log
-scratch/
-uploads/*
-!uploads/.gitkeep
