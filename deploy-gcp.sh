@@ -8,6 +8,7 @@ set -euo pipefail
 GCP_ACTIVE_PROJ="$(gcloud config get-value project 2>/dev/null || echo "")"
 PROJECT_ID="${GCP_PROJECT_ID:-${GCP_ACTIVE_PROJ:-bionic-eye-506609-q5}}"
 PROJECT_NUMBER="${GCP_PROJECT_NUMBER:-762777304269}"
+BILLING_ACCOUNT="01CC1F-189B8E-643632"
 REGION="${GCP_REGION:-us-central1}"
 ARTIFACT_REPO="${GCP_ARTIFACT_REPO:-zacma-repo}"
 BACKEND_SERVICE="zacma-backend"
@@ -18,6 +19,7 @@ echo "🚀 ZACMA GROUP: GOOGLE CLOUD PRODUCTION DEPLOYMENT & VERIFICATION"
 echo "======================================================================"
 echo "🔹 Project ID:      ${PROJECT_ID}"
 echo "🔹 Project Number:  ${PROJECT_NUMBER}"
+echo "🔹 Billing Account: ${BILLING_ACCOUNT}"
 echo "🔹 Region:          ${REGION}"
 echo "🔹 Artifact Repo:   ${ARTIFACT_REPO}"
 echo "======================================================================"
@@ -28,9 +30,14 @@ echo "🔑 Step 1: Verifying gcloud session & setting active project..."
 gcloud config set project "${PROJECT_ID}" --quiet
 echo "✅ Active project set to: $(gcloud config get-value project)"
 
-# 3. Check Billing & Enable APIs
+# 3. Link Billing if necessary
 echo ""
-echo "📦 Step 2: Enabling Required Google Cloud APIs..."
+echo "💳 Step 2: Verifying billing account linking..."
+gcloud billing projects link "${PROJECT_ID}" --billing-account="${BILLING_ACCOUNT}" --quiet 2>/dev/null || echo "ℹ️ Billing already linked or managed."
+
+# 4. Enable APIs
+echo ""
+echo "📦 Step 3: Enabling Required Google Cloud APIs..."
 gcloud services enable \
   run.googleapis.com \
   artifactregistry.googleapis.com \
