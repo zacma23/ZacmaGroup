@@ -34,33 +34,7 @@ steps:
       - '--all-tags'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-backend'
 
-  # Step 3: Build & Push Frontend Container to Google Artifact Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'build-frontend'
-    args:
-      - 'build'
-      - '-t'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:${SHORT_SHA}'
-      - '-t'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:latest'
-      - '--build-arg'
-      - 'NEXT_PUBLIC_API_URL=${_BACKEND_URL}'
-      - '--build-arg'
-      - 'NEXT_PUBLIC_SUPABASE_URL=${_SUPABASE_URL}'
-      - '--build-arg'
-      - 'NEXT_PUBLIC_SUPABASE_ANON_KEY=${_SUPABASE_ANON_KEY}'
-      - '-f'
-      - 'dashboard/Dockerfile'
-      - 'dashboard'
-
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'push-frontend'
-    args:
-      - 'push'
-      - '--all-tags'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend'
-
-  # Step 4: Deploy Backend API to Google Cloud Run
+  # Step 3: Deploy Backend API to Google Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'deploy-backend'
     entrypoint: 'gcloud'
@@ -79,6 +53,24 @@ steps:
       - '--max-instances=10'
       - '--set-env-vars=APP_ENVIRONMENT=production,DEMO_MODE=false,SUPABASE_URL=${_SUPABASE_URL},SANTIMPAY_MERCHANT_ID=${_SANTIMPAY_MERCHANT_ID},SANTIMPAY_BASE_URL=https://services.santimpay.com/api/v1/gateway,SANTIMPAY_TESTBED=false'
 
+  # Step 4: Build & Push Frontend Container with Dynamic Backend URL
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'build-frontend'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        BACKEND_URL=$$(gcloud run services describe ${_BACKEND_SERVICE} --region=${_REGION} --format='value(status.url)' 2>/dev/null || echo "${_BACKEND_URL}")
+        echo "Wiring Frontend to Live Backend URL: $$BACKEND_URL"
+        docker build \
+          -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:${SHORT_SHA} \
+          -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:latest \
+          --build-arg NEXT_PUBLIC_API_URL=$$BACKEND_URL \
+          --build-arg NEXT_PUBLIC_SUPABASE_URL=${_SUPABASE_URL} \
+          --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=${_SUPABASE_ANON_KEY} \
+          -f dashboard/Dockerfile dashboard
+        docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend --all-tags
+
   # Step 5: Deploy Frontend UI to Google Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'deploy-frontend'
@@ -96,7 +88,20 @@ steps:
       - '--memory=1Gi'
       - '--min-instances=0'
       - '--max-instances=10'
-      - '--set-env-vars=NODE_ENV=production,NEXT_PUBLIC_API_URL=${_BACKEND_URL},NEXT_PUBLIC_SUPABASE_URL=${_SUPABASE_URL},NEXT_PUBLIC_SUPABASE_ANON_KEY=${_SUPABASE_ANON_KEY}'
+      - '--set-env-vars=NODE_ENV=production,NEXT_PUBLIC_SUPABASE_URL=${_SUPABASE_URL},NEXT_PUBLIC_SUPABASE_ANON_KEY=${_SUPABASE_ANON_KEY}'
+
+  # Step 6: Print Live Verified URLs
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'verify-urls'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "=========================================================="
+        echo "🎉 LIVE GOOGLE CLOUD RUN SERVICES:"
+        echo "Frontend URL: $$(gcloud run services describe ${_FRONTEND_SERVICE} --region=${_REGION} --format='value(status.url)')"
+        echo "Backend API:  $$(gcloud run services describe ${_BACKEND_SERVICE} --region=${_REGION} --format='value(status.url)')"
+        echo "=========================================================="
 
 substitutions:
   _REGION: 'us-central1'

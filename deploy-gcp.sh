@@ -16,13 +16,8 @@ echo "======================================================================"
 echo "🚀 Starting ZACMA Group Google Cloud Deployment"
 echo "======================================================================"
 
-if [[ -z "$PROJECT_ID" ]]; then
-  echo "❌ Error: Google Cloud Project ID not set."
-  echo "Run: gcloud config set project YOUR_PROJECT_ID or export GCP_PROJECT_ID=YOUR_PROJECT_ID"
-  exit 1
-fi
-
 echo "🔹 Project: ${PROJECT_ID}"
+echo "🔹 Project Number: ${PROJECT_NUMBER}"
 echo "🔹 Region:  ${REGION}"
 echo "🔹 Artifact Registry: ${ARTIFACT_REPO}"
 echo ""
@@ -57,7 +52,21 @@ gcloud builds submit \
   --substitutions=_REGION="${REGION}",_REPO_NAME="${ARTIFACT_REPO}",_BACKEND_SERVICE="${BACKEND_SERVICE}",_FRONTEND_SERVICE="${FRONTEND_SERVICE}" \
   --project="${PROJECT_ID}"
 
-# 4. Retrieve Live Service URLs
+# 4. Ensure Public Invocation Permissions
+echo "📦 Step 4: Configuring Public IAM Access for Cloud Run Services..."
+gcloud run services add-iam-policy-binding "${BACKEND_SERVICE}" \
+  --region="${REGION}" \
+  --member="allUsers" \
+  --role="roles/run.invoker" \
+  --project="${PROJECT_ID}" --quiet || true
+
+gcloud run services add-iam-policy-binding "${FRONTEND_SERVICE}" \
+  --region="${REGION}" \
+  --member="allUsers" \
+  --role="roles/run.invoker" \
+  --project="${PROJECT_ID}" --quiet || true
+
+# 5. Retrieve and Display Live Service URLs
 echo ""
 echo "======================================================================"
 echo "🎉 DEPLOYMENT COMPLETE!"
@@ -65,8 +74,8 @@ echo "======================================================================"
 BACKEND_URL=$(gcloud run services describe "${BACKEND_SERVICE}" --region="${REGION}" --project="${PROJECT_ID}" --format='value(status.url)')
 FRONTEND_URL=$(gcloud run services describe "${FRONTEND_SERVICE}" --region="${REGION}" --project="${PROJECT_ID}" --format='value(status.url)')
 
-echo "🌐 Frontend URL: ${FRONTEND_URL}"
-echo "🔌 Backend API:  ${BACKEND_URL}"
-echo "📖 API Docs:     ${BACKEND_URL}/docs"
-echo "🩺 Health Check: ${BACKEND_URL}/health"
+echo "🌐 Live Frontend URL: ${FRONTEND_URL}"
+echo "🔌 Live Backend API:  ${BACKEND_URL}"
+echo "📖 Live API Docs:     ${BACKEND_URL}/docs"
+echo "🩺 Live Health Check: ${BACKEND_URL}/health"
 echo "======================================================================"
