@@ -108,7 +108,7 @@ substitutions:
   _REPO_NAME: 'zacma-repo'
   _BACKEND_SERVICE: 'zacma-backend'
   _FRONTEND_SERVICE: 'zacma-frontend'
-  _BACKEND_URL: 'https://zacma-backend-659536564001.us-central1.run.app'
+  _BACKEND_URL: 'https://zacma-backend-762777304269.us-central1.run.app'
   _SUPABASE_URL: 'https://ihuxlbfqevubzsqebszp.supabase.co'
   _SUPABASE_ANON_KEY: ''
   _SANTIMPAY_MERCHANT_ID: ''

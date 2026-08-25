@@ -6,8 +6,8 @@ set -euo pipefail
 
 # 1. Discover or Configure Active Project
 GCP_ACTIVE_PROJ="$(gcloud config get-value project 2>/dev/null || echo "")"
-PROJECT_ID="${GCP_PROJECT_ID:-${GCP_ACTIVE_PROJ:-zacmagroupaiaiautomation}}"
-PROJECT_NUMBER="${GCP_PROJECT_NUMBER:-659536564001}"
+PROJECT_ID="${GCP_PROJECT_ID:-${GCP_ACTIVE_PROJ:-bionic-eye-506609-q5}}"
+PROJECT_NUMBER="${GCP_PROJECT_NUMBER:-762777304269}"
 REGION="${GCP_REGION:-us-central1}"
 ARTIFACT_REPO="${GCP_ARTIFACT_REPO:-zacma-repo}"
 BACKEND_SERVICE="zacma-backend"

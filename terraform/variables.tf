@@ -1,6 +1,6 @@
 variable "project_id" {
   type        = string
-  default     = "zacmagroupaiautomation"
+  default     = "bionic-eye-506609-q5"
   description = "Google Cloud Project ID"
 }
 

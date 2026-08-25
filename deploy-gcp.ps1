@@ -2,7 +2,7 @@
 # ZACMA Group - Google Cloud Run One-Click Production Deployment Script (PowerShell)
 # ==============================================================================
 param (
-    [string]$ProjectId = $(if ($env:GCP_PROJECT_ID) { $env:GCP_PROJECT_ID } else { "zacmagroupaiautomation" }),
+    [string]$ProjectId = $(if ($env:GCP_PROJECT_ID) { $env:GCP_PROJECT_ID } else { "bionic-eye-506609-q5" }),
     [string]$Region = "us-central1",
     [string]$ArtifactRepo = "zacma-repo"
 )
