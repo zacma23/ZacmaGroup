@@ -20,7 +20,7 @@ steps:
     args:
       - 'build'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-backend:${SHORT_SHA}'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-backend:${_TAG}'
       - '-t'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-backend:latest'
       - '-f'
@@ -42,7 +42,7 @@ steps:
       - 'run'
       - 'deploy'
       - '${_BACKEND_SERVICE}'
-      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-backend:${SHORT_SHA}'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-backend:${_TAG}'
       - '--region=${_REGION}'
       - '--platform=managed'
       - '--allow-unauthenticated'
@@ -63,7 +63,7 @@ steps:
         BACKEND_URL=$$(gcloud run services describe ${_BACKEND_SERVICE} --region=${_REGION} --format='value(status.url)' 2>/dev/null || echo "${_BACKEND_URL}")
         echo "Wiring Frontend to Live Backend URL: $$BACKEND_URL"
         docker build \
-          -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:${SHORT_SHA} \
+          -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:${_TAG} \
           -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:latest \
           --build-arg NEXT_PUBLIC_API_URL=$$BACKEND_URL \
           --build-arg NEXT_PUBLIC_SUPABASE_URL=${_SUPABASE_URL} \
@@ -79,7 +79,7 @@ steps:
       - 'run'
       - 'deploy'
       - '${_FRONTEND_SERVICE}'
-      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:${SHORT_SHA}'
+      - '--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:${_TAG}'
       - '--region=${_REGION}'
       - '--platform=managed'
       - '--allow-unauthenticated'
@@ -104,6 +104,7 @@ steps:
         echo "=========================================================="
 
 substitutions:
+  _TAG: 'latest'
   _REGION: 'us-central1'
   _REPO_NAME: 'zacma-repo'
   _BACKEND_SERVICE: 'zacma-backend'
@@ -114,8 +115,8 @@ substitutions:
   _SANTIMPAY_MERCHANT_ID: ''
 
 images:
-  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-backend:${SHORT_SHA}'
-  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:${SHORT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-backend:${_TAG}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/zacma-frontend:${_TAG}'
 
 options:
   logging: CLOUD_LOGGING_ONLY

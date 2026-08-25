@@ -61,9 +61,13 @@ if (-not $repoExists) {
 
 # 3. Cloud Build
 Write-Host "📦 Step 3: Submitting Cloud Build..." -ForegroundColor Yellow
+$imageTag = "latest"
+try { $imageTag = (git rev-parse --short HEAD 2>$null) } catch {}
+if (-not $imageTag) { $imageTag = (Get-Date -Format "yyyyMMddHHmmss") }
+
 gcloud builds submit `
     --config=cloudbuild.yaml `
-    --substitutions=_REGION="$Region",_REPO_NAME="$ArtifactRepo",_BACKEND_SERVICE="zacma-backend",_FRONTEND_SERVICE="zacma-frontend" `
+    --substitutions=_TAG="$imageTag",_REGION="$Region",_REPO_NAME="$ArtifactRepo",_BACKEND_SERVICE="zacma-backend",_FRONTEND_SERVICE="zacma-frontend" `
     --project=$ProjectId
 
 # 4. Results

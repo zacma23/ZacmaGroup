@@ -64,9 +64,11 @@ fi
 # 5. Execute Cloud Build Pipeline
 echo ""
 echo "📦 Step 4: Submitting Cloud Build for Backend & Frontend..."
+IMAGE_TAG="$(git rev-parse --short HEAD 2>/dev/null || date +%s || echo "v1")"
+echo "🔹 Immutable Image Tag: ${IMAGE_TAG}"
 gcloud builds submit \
   --config=cloudbuild.yaml \
-  --substitutions=_REGION="${REGION}",_REPO_NAME="${ARTIFACT_REPO}",_BACKEND_SERVICE="${BACKEND_SERVICE}",_FRONTEND_SERVICE="${FRONTEND_SERVICE}" \
+  --substitutions=_TAG="${IMAGE_TAG}",_REGION="${REGION}",_REPO_NAME="${ARTIFACT_REPO}",_BACKEND_SERVICE="${BACKEND_SERVICE}",_FRONTEND_SERVICE="${FRONTEND_SERVICE}" \
   --project="${PROJECT_ID}"
 
 # 6. Configure IAM Public Invoker Policy
